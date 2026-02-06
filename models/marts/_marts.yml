@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: dim_funnel_stages
+    description: >
+      Dimension table containing all 11 funnel steps.
+      Includes 9 pipeline stages (1-9) and 2 sales call activities (2.1, 3.1).
+    columns:
+      - name: funnel_step_id
+        description: Unique identifier for the funnel step
+        tests:
+          - unique
+          - not_null
+      - name: funnel_step
+        description: Funnel step number (1-9, 2.1, 3.1)
+        tests:
+          - not_null
+      - name: kpi_name
+        description: Display name for the KPI
+      - name: sort_order
+        description: Sort order for proper funnel visualization
+
+  - name: fct_deal_funnel_events
+    description: >
+      Fact table containing all deal funnel events.
+      Each row represents one deal entering one funnel step.
+      Combines stage transitions and sales call activities.
+    columns:
+      - name: deal_id
+        description: Deal identifier
+        tests:
+          - not_null
+      - name: event_timestamp
+        description: When the deal entered this funnel step
+      - name: funnel_step
+        description: Funnel step number
+        tests:
+          - not_null
+      - name: kpi_name
+        description: KPI name for the funnel step
+      - name: event_type
+        description: Type of event (stage_transition or activity)
+
+  - name: rep_sales_funnel_monthly
+    description: >
+      Monthly sales funnel report showing how many deals entered each funnel step.
+      This is the final reporting model for the assessment.
+    columns:
+      - name: month
+        description: Month (first day of month)
+        tests:
+          - not_null
+      - name: kpi_name
+        description: KPI name (Lead Generation, Qualified Lead, Sales Call 1, etc.)
+        tests:
+          - not_null
+      - name: funnel_step
+        description: Funnel step number (1-9, 2.1, 3.1)
+        tests:
+          - not_null
+      - name: deals_count
+        description: Count of distinct deals entering this funnel step in the month
+        tests:
+          - not_null

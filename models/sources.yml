@@ -1,8 +1,79 @@
 version: 2
 
 sources:
-  - name: postgres_public
+  - name: pipedrive
+    description: Pipedrive CRM source data
     database: postgres
     schema: public
     tables:
       - name: activity
+        description: Activities (calls, meetings) associated with deals
+        columns:
+          - name: activity_id
+            description: Unique activity identifier
+          - name: type
+            description: Activity type key (meeting, sc_2, etc.)
+          - name: assigned_to_user
+            description: User ID of assigned sales rep
+          - name: deal_id
+            description: Associated deal ID
+          - name: done
+            description: Whether activity is completed
+          - name: due_to
+            description: Due date/time for the activity
+
+      - name: activity_types
+        description: Activity type definitions and metadata
+        columns:
+          - name: id
+            description: Activity type ID
+          - name: name
+            description: Display name (Sales Call 1, Sales Call 2, etc.)
+          - name: active
+            description: Whether this type is currently active
+          - name: type
+            description: Type key (meeting, sc_2, etc.)
+
+      - name: deal_changes
+        description: Historical log of deal field changes
+        columns:
+          - name: deal_id
+            description: Deal identifier
+          - name: change_time
+            description: Timestamp of the change
+          - name: changed_field_key
+            description: Field that was changed (stage_id, user_id, etc.)
+          - name: new_value
+            description: New value after the change
+
+      - name: fields
+        description: Custom field definitions
+        columns:
+          - name: id
+            description: Field ID
+          - name: field_key
+            description: Field key identifier
+          - name: name
+            description: Display name
+          - name: field_value_options
+            description: JSON options for the field
+
+      - name: stages
+        description: Pipeline stage definitions
+        columns:
+          - name: stage_id
+            description: Stage identifier
+          - name: stage_name
+            description: Stage display name
+
+      - name: users
+        description: Sales representatives and users
+        columns:
+          - name: id
+            description: User identifier
+          - name: name
+            description: User display name
+          - name: email
+            description: User email
+          - name: modified
+            description: Last modification timestamp

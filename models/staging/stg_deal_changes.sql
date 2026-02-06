@@ -1,0 +1,12 @@
+{{
+    config(
+        materialized='view'
+    )
+}}
+
+select
+    deal_id,
+    change_time as changed_at,
+    changed_field_key,
+    new_value
+from {{ source('pipedrive', 'deal_changes') }}

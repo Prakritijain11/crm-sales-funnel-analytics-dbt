@@ -1,34 +1,80 @@
-## Setup
+# Enpal dbt Assessment - Pipedrive CRM Analytics
 
-1. Download Docker Desktop (if you don’t have installed) using the official website, install and launch.
-2. Fork this Github project to you Github account. Clone the forked repo to your device.
-3. Open your Command Prompt or Terminal, navigate to that folder, and run the command `docker compose up`.
-4. Now you have launched a local Postgres database with the following credentials:
- ```
-    Host: localhost
-    User: admin
-    Password: admin
-    Port: 5432 
+## Project Overview
+
+This project builds a dbt data model for Pipedrive CRM sales funnel analytics, implementing a three-layer architecture (staging → intermediate → marts) for optimal maintainability and reusability.
+
+## Data Layers
+
+### Sources
+Defined in `models/sources.yml` - 6 Pipedrive CRM tables:
+- `activity` - CRM activities (calls, meetings)
+- `activity_types` - Activity type definitions
+- `deal_changes` - Deal field change history
+- `stages` - Pipeline stage definitions
+- `users` - Sales representatives
+- `fields` - Custom field definitions
+
+### Staging Layer (`models/staging/`)
+Clean and standardize source data with minimal transformations.
+
+### Intermediate Layer (`models/intermediate/`)
+Business logic transformations:
+- `int_deal_stage_history` - Tracks when deals enter each pipeline stage
+- `int_deal_activities` - Maps activities to funnel steps (Sales Calls)
+
+### Mart Layer (`models/marts/`)
+Business-facing models including the final report.
+
+---
+
+## Sales Funnel Report
+
+**Model:** `rep_sales_funnel_monthly`
+
+**Columns:** `month`, `kpi_name`, `funnel_step`, `deals_count`
+
+### Funnel Steps (KPIs)
+
+| Step | KPI Name | Data Source |
+|------|----------|-------------|
+| 1 | Lead Generation | Pipeline Stage |
+| 2 | Qualified Lead | Pipeline Stage |
+| 2.1 | Sales Call 1 | Activity (type='meeting') |
+| 3 | Needs Assessment | Pipeline Stage |
+| 3.1 | Sales Call 2 | Activity (type='sc_2') |
+| 4 | Proposal/Quote Preparation | Pipeline Stage |
+| 5 | Negotiation | Pipeline Stage |
+| 6 | Closing | Pipeline Stage |
+| 7 | Implementation/Onboarding | Pipeline Stage |
+| 8 | Follow-up/Customer Success | Pipeline Stage |
+| 9 | Renewal/Expansion | Pipeline Stage |
+
+---
+
+## Setup & Run
+
+```bash
+# Start database
+docker compose up -d
+
+# Load data (Windows)
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY stages FROM '/raw_data/stages.csv' DELIMITER ',' CSV HEADER;"
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY activity_types FROM '/raw_data/activity_types.csv' DELIMITER ',' CSV HEADER;"
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY users FROM '/raw_data/users.csv' DELIMITER ',' CSV HEADER;"
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY fields FROM '/raw_data/fields.csv' DELIMITER ',' CSV HEADER;"
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY activity FROM '/raw_data/activity.csv' DELIMITER ',' CSV HEADER;"
+docker exec enpal-db-1 psql -U admin -d postgres -c "\COPY deal_changes FROM '/raw_data/deal_changes.csv' DELIMITER ',' CSV HEADER;"
+
+# Run dbt
+pip install dbt-postgres
+dbt debug
+dbt run
+dbt test
 ```
-5. Connect to the db via a preferred tool (e.g. DataGrip, Dbeaver etc)
-6. Install dbt-core and dbt-postgres using pip (if you don’t have) on your preferred environment.
-7. Now you can run `dbt run` with the test model and check public_pipedrive_analytics schema to see the dbt result (with one test model)
 
-## Project
-1. Remove the test model once you make sure it works
-2. Dive deep into the Pipedrive CRM source data to gain a thorough understanding of all its details. (You may also research the Pipedrive CRM tool terms).
-3. Define DBT sources and build the necessary layers organizing the data flow for optimal relevance and maintainability.
-4. Build a reporting model (rep_sales_funnel_monthly) with monthly intervals, incorporating the following funnel steps (KPIs):  
-  &nbsp;&nbsp;&nbsp;Step 1: Lead Generation  
-  &nbsp;&nbsp;&nbsp;Step 2: Qualified Lead  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Step 2.1: Sales Call 1  
-  &nbsp;&nbsp;&nbsp;Step 3: Needs Assessment  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Step 3.1: Sales Call 2  
-  &nbsp;&nbsp;&nbsp;Step 4: Proposal/Quote Preparation  
-  &nbsp;&nbsp;&nbsp;Step 5: Negotiation  
-  &nbsp;&nbsp;&nbsp;Step 6: Closing  
-  &nbsp;&nbsp;&nbsp;Step 7: Implementation/Onboarding  
-  &nbsp;&nbsp;&nbsp;Step 8: Follow-up/Customer Success  
-  &nbsp;&nbsp;&nbsp;Step 9: Renewal/Expansion
-5. Column names of the reporting model: `month`, `kpi_name`, `funnel_step`, `deals_count`
-6. “Git commit” all the changes and create a PR to your forked repo (not the original one). Send your repo link to us.
+---
+
+## Author
+
+**Prakriti Jain** - prakriti.ps.jain@gmail.com

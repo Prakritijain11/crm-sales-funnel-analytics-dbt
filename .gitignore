@@ -1,0 +1,19 @@
+# dbt artifacts
+target/
+logs/
+dbt_packages/
+
+# dbt user settings
+.user.yml
+
+# Python
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
